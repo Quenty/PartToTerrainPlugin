@@ -21,7 +21,7 @@ You can find the published version [here](https://www.roblox.com/library/1618177
 
 Here's an example of the UI
 
-![alt text](images/ScreenShot2.png "Example of plugin interface with some terrain built with part-to-terrain conversion")
+![alt text](images/Screenshot2.png "Example of plugin interface with some terrain built with part-to-terrain conversion")
 
 ### Building the plugin
 This plugin is built with [Rojo](https://github.com/LPGhatguy/rojo).
