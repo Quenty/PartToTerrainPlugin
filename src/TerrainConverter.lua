@@ -85,6 +85,20 @@ function TerrainConverter:_getOverwriteMaterials()
 	return materials
 end
 
+function TerrainConverter:_doFillUpwards(cellMaterial, desiredMaterial)
+	if desiredMaterial == Enum.Material.Air then
+		return false
+	end
+	if desiredMaterial == Enum.Material.Water then
+		if cellMaterial == Enum.Material.Air or cellMaterial == Enum.Material.Water then
+			return true
+		else
+			return false
+		end
+	end
+
+	return true
+end
 
 function TerrainConverter:_fillBlock(blockCFrame, blockSize, desiredMaterial)
 	if (self.OverwriteTerrain.Value and self.OverwriteWater.Value) then
@@ -93,6 +107,7 @@ function TerrainConverter:_fillBlock(blockCFrame, blockSize, desiredMaterial)
 	end
 
 	local overwriteMaterials = self:_getOverwriteMaterials()
+	-- local shouldFillUpwards = self:_shouldFillUpwards(desiredMaterial)
 
 	-- https://pastebin.com/S03Q8ftH
 
@@ -158,7 +173,8 @@ function TerrainConverter:_fillBlock(blockCFrame, blockSize, desiredMaterial)
 						occupancyVoxels[x][y][z] = 1
 					end
 				else
-					if brushOccupancy > cellOccupancy and desiredMaterial ~= Enum.Material.Air then
+					--- fills upwards!
+					if brushOccupancy > cellOccupancy and self:_doFillUpwards(cellMaterial, desiredMaterial) then
 						occupancyVoxels[x][y][z] = brushOccupancy
 					end
 					if brushOccupancy >= 0.1 and overwriteMaterials[cellMaterial] then
@@ -213,7 +229,8 @@ function TerrainConverter:_fillBall(center, radius, desiredMaterial)
 						occupancyVoxels[x][y][z] = 1
 					end
 				else
-					if brushOccupancy > cellOccupancy and desiredMaterial ~= Enum.Material.Air then
+					--- fills upwards!
+					if brushOccupancy > cellOccupancy and self:_doFillUpwards(cellMaterial, desiredMaterial) then
 						occupancyVoxels[x][y][z] = brushOccupancy
 					end
 					if brushOccupancy >= 0.5 and overwriteMaterials[cellMaterial] then
