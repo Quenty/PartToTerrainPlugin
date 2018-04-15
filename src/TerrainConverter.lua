@@ -87,7 +87,7 @@ function TerrainConverter:_getOverwriteMaterials()
 			materials[item.enum] = true
 		end
 
-		-- don't remove air, it shouldn't matter
+		-- don't remove air, it shouldn't matter, keeps things converting nicely
 		-- materials[Enum.Material.Air] = nil
 	else
 		materials[Enum.Material.Air] = true
@@ -108,8 +108,7 @@ function TerrainConverter:_fillBlock(blockCFrame, blockSize, desiredMaterial)
 		warn("[TerrainConverter] - Doing nothing -- OverwriteWater and OverwriteTerrain are both disabled")
 		return
 	end
-	if (self.OverwriteTerrain.Value and self.OverwriteWater.Value)
-		or (desiredMaterial == Enum.Material.Air and self.OverwriteWater.Value) then
+	if (self.OverwriteTerrain.Value and self.OverwriteWater.Value) then
 		workspace.Terrain:FillBlock(blockCFrame, blockSize, desiredMaterial)
 		return
 	end
@@ -180,7 +179,7 @@ function TerrainConverter:_fillBlock(blockCFrame, blockSize, desiredMaterial)
 						occupancyVoxels[x][y][z] = 1
 					end
 				else
-					if brushOccupancy > cellOccupancy then
+					if brushOccupancy > cellOccupancy and overwriteMaterials[cellMaterial] then
 						occupancyVoxels[x][y][z] = brushOccupancy
 					end
 					if brushOccupancy >= 0.1 and overwriteMaterials[cellMaterial] then
@@ -200,8 +199,7 @@ function TerrainConverter:_fillBall(center, radius, desiredMaterial)
 		return
 	end
 
-	if (self.OverwriteTerrain.Value and self.OverwriteWater.Value)
-		or (desiredMaterial == Enum.Material.Air and self.OverwriteWater.Value) then
+	if (self.OverwriteTerrain.Value and self.OverwriteWater.Value) then
 		workspace.Terrain:FillBall(center, radius, desiredMaterial)
 		return
 	end
@@ -241,7 +239,7 @@ function TerrainConverter:_fillBall(center, radius, desiredMaterial)
 						occupancyVoxels[x][y][z] = 1
 					end
 				else
-					if brushOccupancy > cellOccupancy then
+					if brushOccupancy > cellOccupancy and overwriteMaterials[cellMaterial] then
 						occupancyVoxels[x][y][z] = brushOccupancy
 					end
 					if brushOccupancy >= 0.5 and overwriteMaterials[cellMaterial] then
