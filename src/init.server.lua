@@ -66,9 +66,9 @@ local function activate(button)
 	-- Handle change history service
 	if not IS_DEBUG_MODE then
 		local ChangeHistoryService = game:GetService("ChangeHistoryService")
-		converter.ConversionStarting:Connect(function()
+		maid:GiveTask(converter.ConversionStarting:Connect(function()
 			ChangeHistoryService:SetWaypoint("Conversion_" .. HttpService:GenerateGUID(true))
-		end)
+		end))
 	end
 
 	-- Handle plugin button
