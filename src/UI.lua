@@ -45,9 +45,15 @@ function UI.new(gui, selectonService, terrainConverter)
 
 	self._replaceExistingTerrain = Checkbox.new({
 		Name = "Overwrite terrain";
-		BoolValue = self._terrainConverter.ReplaceExistingTerrain;
+		BoolValue = self._terrainConverter.OverwriteTerrain;
 	})
 	self:_addOptionGui(self._replaceExistingTerrain)
+
+	self._ignoreWater = Checkbox.new({
+		Name = "Overwrite water";
+		BoolValue = self._terrainConverter.OverwriteWater;
+	})
+	self:_addOptionGui(self._ignoreWater)
 
 	return self
 end

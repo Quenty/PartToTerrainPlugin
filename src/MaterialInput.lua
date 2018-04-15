@@ -3,7 +3,6 @@
 -- @author Quenty
 
 local UserInputService = game:GetService("UserInputService")
-local ContextActionService = game:GetService("ContextActionService")
 local Workspace = game:GetService("Workspace")
 
 local BasicPane = require(script.Parent.BasicPane)
@@ -29,7 +28,11 @@ function MaterialInput.new(mouse)
 		end
 	end
 
-	self._maid:GiveTask(UserInputService.InputBegan:Connect(function(inputObject)
+	self._maid:GiveTask(UserInputService.InputBegan:Connect(function(inputObject, gameProcessed)
+		if gameProcessed then
+			return
+		end
+
 		if inputObject.UserInputType == Enum.UserInputType.MouseButton1 then
 			if UserInputService:IsKeyDown(Enum.KeyCode.LeftAlt) or UserInputService:IsKeyDown(Enum.KeyCode.RightAlt) then
 				local material = self:_findMaterial()

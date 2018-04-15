@@ -43,6 +43,7 @@ local function activate(button)
 	local maid = Maid.new()
 
 	local converter = TerrainConverter.new()
+	maid:GiveTask(converter)
 
 	local newScreenGui = screenGui:Clone()
 	maid:GiveTask(newScreenGui)

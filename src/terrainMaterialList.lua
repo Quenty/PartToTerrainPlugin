@@ -116,4 +116,9 @@ return {
 		image = "rbxasset://textures/TerrainTools/mtrl_pavement.png",
 		text = "Pavement",
 	},
+	{
+		enum = Enum.Material.Air,
+		image = "rbxassetid://1618431047",
+		text = "Air",
+	},
 }

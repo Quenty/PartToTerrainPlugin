@@ -5,24 +5,44 @@
 local Signal = require(script.Parent.Signal)
 local BoundingBox = require(script.Parent.BoundingBox)
 local Draw = require(script.Parent.Draw)
+local BasicPane = require(script.Parent.BasicPane)
+local terrainMaterialList = require(script.Parent.terrainMaterialList)
 
-local MATERIAL_AIR = Enum.Material.Air
-
-local TerrainConverter = {}
+local TerrainConverter = setmetatable({}, BasicPane)
 TerrainConverter.ClassName = "TerrainConverter"
 TerrainConverter.__index = TerrainConverter
 TerrainConverter.RESOLUTION = 4
 
 function TerrainConverter.new()
-	local self = setmetatable({}, TerrainConverter)
+	local self = setmetatable(BasicPane.new(), TerrainConverter)
 
 	self.KeepConvertedPart = Instance.new("BoolValue")
 	self.KeepConvertedPart.Value = true
+	self._maid:GiveTask(self.KeepConvertedPart)
 
-	self.ReplaceExistingTerrain = Instance.new("BoolValue")
-	self.ReplaceExistingTerrain.Value = true
+	self.OverwriteTerrain = Instance.new("BoolValue")
+	self.OverwriteTerrain.Value = true
+	self._maid:GiveTask(self.OverwriteTerrain)
+
+	self.OverwriteWater = Instance.new("BoolValue")
+	self.OverwriteWater.Value = true
+	self._maid:GiveTask(self.OverwriteWater)
 
 	self.ConversionStarting = Signal.new()
+	self._maid:GiveTask(self.ConversionStarting)
+
+	-- Make sure the user can always overwrite _something)
+	self._maid:GiveTask(self.OverwriteTerrain.Changed:Connect(function()
+		if not self.OverwriteTerrain.Value and not self.OverwriteWater.Value then
+			self.OverwriteWater.Value = true
+		end
+	end))
+	self._maid:GiveTask(self.OverwriteWater.Changed:Connect(function()
+		if not self.OverwriteTerrain.Value and not self.OverwriteWater.Value then
+			self.OverwriteTerrain.Value = true
+		end
+	end))
+
 
 	return self
 end
@@ -59,11 +79,42 @@ function TerrainConverter:CanConvert(items)
 	return false
 end
 
+function TerrainConverter:_getOverwriteMaterials()
+	local materials = {}
+
+	if self.OverwriteTerrain.Value then
+		for _, item in pairs(terrainMaterialList) do
+			materials[item.enum] = true
+		end
+
+		-- don't remove air, it shouldn't matter
+		-- materials[Enum.Material.Air] = nil
+	else
+		materials[Enum.Material.Air] = true
+	end
+
+	if self.OverwriteWater.Value then
+		materials[Enum.Material.Water] = true
+	else
+		materials[Enum.Material.Water] = nil
+	end
+
+	return materials
+end
+
+
 function TerrainConverter:_fillBlock(blockCFrame, blockSize, desiredMaterial)
-	if self.ReplaceExistingTerrain.Value then
+	if not self.OverwriteTerrain.Value and not self.OverwriteWater.Value then
+		warn("[TerrainConverter] - Doing nothing -- OverwriteWater and OverwriteTerrain are both disabled")
+		return
+	end
+	if (self.OverwriteTerrain.Value and self.OverwriteWater.Value)
+		or (desiredMaterial == Enum.Material.Air and self.OverwriteWater.Value) then
 		workspace.Terrain:FillBlock(blockCFrame, blockSize, desiredMaterial)
 		return
 	end
+
+	local overwriteMaterials = self:_getOverwriteMaterials()
 
 	-- https://pastebin.com/S03Q8ftH
 
@@ -123,7 +174,7 @@ function TerrainConverter:_fillBlock(blockCFrame, blockSize, desiredMaterial)
 				-- Use terrain tools filling behavior here
 				if smallestSize <= 2 then
 					if brushOccupancy >= 0.1 then
-						if cellMaterial == MATERIAL_AIR or cellOccupancy <= 0 then
+						if overwriteMaterials[cellMaterial] or cellOccupancy <= 0 then
 							materialVoxels[x][y][z] = desiredMaterial
 						end
 						occupancyVoxels[x][y][z] = 1
@@ -132,7 +183,7 @@ function TerrainConverter:_fillBlock(blockCFrame, blockSize, desiredMaterial)
 					if brushOccupancy > cellOccupancy then
 						occupancyVoxels[x][y][z] = brushOccupancy
 					end
-					if brushOccupancy >= 0.1 and cellMaterial == MATERIAL_AIR then
+					if brushOccupancy >= 0.1 and overwriteMaterials[cellMaterial] then
 						materialVoxels[x][y][z] = desiredMaterial
 					end
 				end
@@ -143,12 +194,19 @@ function TerrainConverter:_fillBlock(blockCFrame, blockSize, desiredMaterial)
 	workspace.Terrain:WriteVoxels(region, self.RESOLUTION, materialVoxels, occupancyVoxels)
 end
 
-
 function TerrainConverter:_fillBall(center, radius, desiredMaterial)
-	if self.ReplaceExistingTerrain.Value then
+	if not self.OverwriteTerrain.Value and not self.OverwriteWater.Value then
+		warn("[TerrainConverter] - Doing nothing -- OverwriteWater and OverwriteTerrain are both disabled")
+		return
+	end
+
+	if (self.OverwriteTerrain.Value and self.OverwriteWater.Value)
+		or (desiredMaterial == Enum.Material.Air and self.OverwriteWater.Value) then
 		workspace.Terrain:FillBall(center, radius, desiredMaterial)
 		return
 	end
+
+	local overwriteMaterials = self:_getOverwriteMaterials()
 
 	local resolution = self.RESOLUTION
 
@@ -177,7 +235,7 @@ function TerrainConverter:_fillBall(center, radius, desiredMaterial)
 				-- Use terrain tools filling behavior here
 				if radius <= 2 then
 					if brushOccupancy >= 0.5 then
-						if cellMaterial == MATERIAL_AIR or cellOccupancy <= 0 then
+						if overwriteMaterials[cellMaterial] or cellOccupancy <= 0 then
 							materialVoxels[x][y][z] = desiredMaterial
 						end
 						occupancyVoxels[x][y][z] = 1
@@ -186,7 +244,7 @@ function TerrainConverter:_fillBall(center, radius, desiredMaterial)
 					if brushOccupancy > cellOccupancy then
 						occupancyVoxels[x][y][z] = brushOccupancy
 					end
-					if brushOccupancy >= 0.5 and cellMaterial == MATERIAL_AIR then
+					if brushOccupancy >= 0.5 and overwriteMaterials[cellMaterial] then
 						materialVoxels[x][y][z] = desiredMaterial
 					end
 				end
