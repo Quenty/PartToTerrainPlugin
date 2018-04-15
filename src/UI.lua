@@ -8,7 +8,7 @@ local Signal = require(script.Parent.Signal)
 local ConvertPane = require(script.Parent.ConvertPane)
 local Checkbox = require(script.Parent.Checkbox)
 
-local UI = {}
+local UI = setmetatable({}, BasicPane)
 UI.ClassName = "UI"
 UI.__index = UI
 
@@ -26,10 +26,10 @@ function UI.new(gui, selectonService, terrainConverter)
 	self._maid:GiveTask(self._materialList)
 
 	self._convertPane = ConvertPane.new(self.Gui.Content.ConvertPane, selectonService, terrainConverter)
+	self._maid:GiveTask(self._convertPane)
 	self._maid:GiveTask(self._convertPane.RequestConvert:Connect(function(selection)
 		self.RequestConvert:Fire(selection, self._materialList.SelectedMaterial.Value)
 	end))
-	self._maid:GiveTask(self._convertPane)
 
 	self.Gui.Header.CloseButton.MouseButton1Click:Connect(function()
 		self.RequestClose:Fire()

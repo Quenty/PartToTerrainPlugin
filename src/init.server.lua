@@ -51,7 +51,6 @@ local function activate(button)
 	newScreenGui.Parent = IS_DEBUG_MODE and game.Players.LocalPlayer.PlayerGui or game.CoreGui
 
 	local ui = UI.new(newScreenGui.Main, selectionService, converter)
-
 	maid:GiveTask(ui)
 	maid:GiveTask(ui.RequestClose:Connect(function()
 		deactivate()

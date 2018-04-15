@@ -19,6 +19,7 @@ function ConvertPane.new(gui, selectionService, terrainConverter)
 
 	self._canConvert = Instance.new("BoolValue")
 	self._canConvert.Value = false
+	self._maid:GiveTask(self._canConvert)
 
 	self._maid:GiveTask(self._canConvert.Changed:Connect(function()
 		self:_updateButton()
@@ -42,12 +43,6 @@ function ConvertPane.new(gui, selectionService, terrainConverter)
 	self:_updateStatus()
 	self:_updateButton()
 
-	-- self._maid:GiveTask(self._terrainConverter.OverwriteWater.Changed:Connect(function()
-	-- 	self:_updateStatus()
-	-- end))
-	-- self._maid:GiveTask(self._terrainConverter.OverwriteTerrain.Changed:Connect(function()
-	-- 	self:_updateStatus()
-	-- end))
 
 	return self
 end
@@ -70,10 +65,6 @@ function ConvertPane:_updateStatus()
 	local selection = self._selectionService:Get()
 
 	local canConvert
-	-- if not self._terrainConverter.OverwriteWater.Value and not self._terrainConverter.OverwriteTerrain.Value then
-	-- 	self._statusLabel.Text = "Can't overwrite water or terrain"
-	-- 	canConvert = false
-	-- else
 	if #selection == 0 then
 		self._statusLabel.Text = "Nothing selected"
 		canConvert = false
