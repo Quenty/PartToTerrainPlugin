@@ -3,21 +3,21 @@
 
 local Workspace = game:GetService("Workspace")
 
-local lib = {}
-lib._defaultColor = Color3.new(1, 0, 0)
+local Draw = {}
+Draw._defaultColor = Color3.new(1, 0, 0)
 
-function lib.SetColor(color)
-	lib._defaultColor = color
+function Draw.SetColor(color)
+	Draw._defaultColor = color
 end
 
-function lib.SetRandomColor()
-	lib.SetColor(Color3.fromHSV(math.random(), 0.5+0.5*math.random(), 1))
+function Draw.SetRandomColor()
+	Draw.SetColor(Color3.fromHSV(math.random(), 0.5+0.5*math.random(), 1))
 end
 
 --- Draws a ray for debugging
 -- @param ray The ray to draw
-function lib.Ray(ray, color, parent, meshDiameter, diameter)
-	color = color or lib._defaultColor
+function Draw.Ray(ray, color, parent, meshDiameter, diameter)
+	color = color or Draw._defaultColor
 	parent = parent or Workspace.CurrentCamera
 	meshDiameter = meshDiameter or 0.2
 	diameter = diameter or 0.2
@@ -48,9 +48,9 @@ end
 
 --- Draws a point for debugging
 -- @param vector3 Point to draw
-function lib.Point(vector3, color, parent, diameter)
+function Draw.Point(vector3, color, parent, diameter)
 	assert(vector3)
-	color = color or lib._defaultColor
+	color = color or Draw._defaultColor
 	parent = parent or Workspace.CurrentCamera
 	diameter = diameter or 1
 
@@ -81,8 +81,8 @@ function lib.Point(vector3, color, parent, diameter)
 	return part
 end
 
-function lib.Box(cframe, size, color)
-	color = color or lib._defaultColor
+function Draw.Box(cframe, size, color)
+	color = color or Draw._defaultColor
 	cframe = typeof(cframe) == "Vector3" and CFrame.new(cframe) or cframe
 
 	local part = Instance.new("Part")
@@ -101,4 +101,4 @@ function lib.Box(cframe, size, color)
 	return part
 end
 
-return lib
+return Draw
