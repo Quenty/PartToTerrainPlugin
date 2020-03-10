@@ -45,10 +45,6 @@ function MaterialInput.new(mouse)
 		end
 	end))
 
-	self._maid:GiveTask(function()
-
-	end)
-
 	return self
 end
 
