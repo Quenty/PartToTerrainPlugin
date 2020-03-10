@@ -1,0 +1,15 @@
+{
+  "name": "PartToTerrain",
+    "tree": {
+    "$className": "DataModel",
+    "StarterGui": {
+      "$className": "StarterGui",
+      "QuentyPartToTerrain": {
+        "$className": "Folder",
+      	"Plugin": {
+        	"$path": "src"
+      	}
+      }
+    }
+  }
+}
