@@ -2,9 +2,10 @@
 -- @classmod TerrainConverter
 -- @author Quenty
 
+local Workspace = game:GetService("Workspace")
+
 local Signal = require(script.Parent.Signal)
 local BoundingBox = require(script.Parent.BoundingBox)
-local Draw = require(script.Parent.Draw)
 local BasicPane = require(script.Parent.BasicPane)
 local terrainMaterialList = require(script.Parent.terrainMaterialList)
 
@@ -39,7 +40,7 @@ function TerrainConverter:_canConvertPart(item)
 		return false
 	end
 
-	if item == workspace.Terrain then
+	if item == Workspace.Terrain then
 		return false
 	end
 
@@ -102,7 +103,7 @@ end
 
 function TerrainConverter:_fillBlock(blockCFrame, blockSize, desiredMaterial)
 	if (self.OverwriteTerrain.Value and self.OverwriteWater.Value) then
-		workspace.Terrain:FillBlock(blockCFrame, blockSize, desiredMaterial)
+		Workspace.Terrain:FillBlock(blockCFrame, blockSize, desiredMaterial)
 		return
 	end
 
@@ -124,9 +125,12 @@ function TerrainConverter:_fillBlock(blockCFrame, blockSize, desiredMaterial)
 	local max = aa_position + aa_size/2
 	local region = Region3.new(min, max):ExpandToGrid(resolution)
 	min = region.CFrame.p - region.Size/2
-	max = region.CFrame.p + region.Size/2
 
-	local materialVoxels, occupancyVoxels = workspace.Terrain:ReadVoxels(region, resolution)
+	-- luacheck: push ignore
+	max = region.CFrame.p + region.Size/2
+	-- luacheck: pop ignore
+
+	local materialVoxels, occupancyVoxels = Workspace.Terrain:ReadVoxels(region, resolution)
 	local size = materialVoxels.Size
 
 	-- Draw.Point(min)
@@ -135,7 +139,10 @@ function TerrainConverter:_fillBlock(blockCFrame, blockSize, desiredMaterial)
 
 	-- Since we only care about the size if it's less than one cell, we clamp this to make the calculations below faster.
 	local sizeCellClamped = (blockSize / resolution)
-	sizeCellClamped = Vector3.new(math.min(1, sizeCellClamped.x), math.min(1, sizeCellClamped.y), math.min(1, sizeCellClamped.z))
+	sizeCellClamped = Vector3.new(
+		math.min(1, sizeCellClamped.x),
+		math.min(1, sizeCellClamped.y),
+		math.min(1, sizeCellClamped.z))
 	local sizeCellsHalfOffset = blockSize * (0.5 / resolution) + Vector3.new(0.5, 0.5, 0.5)
 
 	for x=1, size.X do
@@ -185,12 +192,12 @@ function TerrainConverter:_fillBlock(blockCFrame, blockSize, desiredMaterial)
 		end
 	end
 
-	workspace.Terrain:WriteVoxels(region, self.RESOLUTION, materialVoxels, occupancyVoxels)
+	Workspace.Terrain:WriteVoxels(region, self.RESOLUTION, materialVoxels, occupancyVoxels)
 end
 
 function TerrainConverter:_fillBall(center, radius, desiredMaterial)
 	if (self.OverwriteTerrain.Value and self.OverwriteWater.Value) then
-		workspace.Terrain:FillBall(center, radius, desiredMaterial)
+		Workspace.Terrain:FillBall(center, radius, desiredMaterial)
 		return
 	end
 
@@ -204,9 +211,11 @@ function TerrainConverter:_fillBall(center, radius, desiredMaterial)
 	local region = Region3.new(min, max):ExpandToGrid(resolution)
 
 	min = region.CFrame.p - region.Size/2
+	-- luacheck: push ignore
 	max = region.CFrame.p + region.Size/2
+	-- luacheck: pop ignore
 
-	local materialVoxels, occupancyVoxels = workspace.Terrain:ReadVoxels(region, resolution)
+	local materialVoxels, occupancyVoxels = Workspace.Terrain:ReadVoxels(region, resolution)
 	local size = materialVoxels.Size
 	for x=1, size.X do
 		local cellX = min.x + (x - 0.5) * resolution - center.x
@@ -241,7 +250,7 @@ function TerrainConverter:_fillBall(center, radius, desiredMaterial)
 		end
 	end
 
-	workspace.Terrain:WriteVoxels(region, resolution, materialVoxels, occupancyVoxels)
+	Workspace.Terrain:WriteVoxels(region, resolution, materialVoxels, occupancyVoxels)
 	print("Done writing voxels")
 end
 

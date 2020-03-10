@@ -5,9 +5,12 @@ local HttpService = game:GetService("HttpService")
 
 local Maid = require(script.Maid)
 local MaterialInput = require(script.MaterialInput)
-local plugin = plugin
 local TerrainConverter = require(script.TerrainConverter)
 local UI = require(script.UI)
+
+-- luacheck: push ignore
+local plugin = plugin
+-- luacheck: pop ignore
 
 local IS_DEBUG_MODE = script:IsDescendantOf(game)
 

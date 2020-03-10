@@ -33,7 +33,8 @@ end
 -- Maid[key] = (event connection) Manages an event connection
 -- Maid[key] = (Maid)             Maids can act as an event connection, allowing a Maid to have other maids to clean up.
 -- Maid[key] = (Object)           Maids can cleanup objects with a `Destroy` method
--- Maid[key] = nil                Removes a named task. If the task is an event, it is disconnected. If it is an object, it is destroyed.
+-- Maid[key] = nil                Removes a named task. If the task is an event, it is disconnected. If it is an object,
+--                                it is destroyed.
 function Maid:__newindex(index, newTask)
 	if Maid[index] ~= nil then
 		error(("'%s' is reserved"):format(tostring(index)), 2)
@@ -58,10 +59,32 @@ end
 -- @param task An item to clean
 -- @treturn number taskId
 function Maid:GiveTask(task)
-	assert(task)
+	assert(task, "Task cannot be false or nil")
+
 	local taskId = #self._tasks+1
 	self[taskId] = task
+
+	if type(task) == "table" and (not task.Destroy) then
+		warn("[Maid.GiveTask] - Gave table task without .Destroy\n\n" .. debug.traceback())
+	end
+
 	return taskId
+end
+
+function Maid:GivePromise(promise)
+	if not promise:IsPending() then
+		return promise
+	end
+
+	local newPromise = promise.resolved(promise)
+	local id = self:GiveTask(newPromise)
+
+	-- Ensure GC
+	newPromise:Finally(function()
+		self[id] = nil
+	end)
+
+	return newPromise
 end
 
 --- Cleans up all tasks.
