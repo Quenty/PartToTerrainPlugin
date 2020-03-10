@@ -1,6 +1,11 @@
 <h1 align="center">Quenty's Part to Terrain</h1>
+<div align="center">
+	<a href="https://github.com/Quenty/PartToTerrainPlugin/actions">
+		<img src="https://github.com/Quenty/PartToTerrainPlugin/workflows/luacheck/badge.svg" alt="Actions Status" />
+	</a>
+</div>
 
-Converts part to terrain. Has specific options to keep existing terrain instead of overriding it. 
+Converts part to terrain. Has specific options to keep existing terrain instead of overriding it.
 
 You can find the published version [here](https://www.roblox.com/library/1618177131/Quentys-Part-to-Terrain).
 
@@ -26,7 +31,7 @@ Here's an example of the UI
 ### Building the plugin
 This plugin is built with [Rojo](https://github.com/LPGhatguy/rojo).
 
-Run 
+Run
 
 ```rojo serve```
 
