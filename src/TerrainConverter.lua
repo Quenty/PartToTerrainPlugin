@@ -35,22 +35,27 @@ function TerrainConverter.new()
 	return self
 end
 
-function TerrainConverter:_canConvertPart(item)
-	if not item:IsA("Part") then
+function TerrainConverter:Convert(items, material)
+	assert(items)
+	assert(typeof(material) == "EnumItem")
+
+	local convertables = {}
+	for _, item in pairs(items) do
+		if self:_canConvertPart(item) then
+			table.insert(convertables, item)
+		end
+	end
+
+	-- don't fire change history service of nothing converts
+	if #convertables <= 0 then
 		return false
 	end
 
-	if item == Workspace.Terrain then
-		return false
+	self.ConversionStarting:Fire()
+	for _, item in pairs(convertables) do
+		self:_convertPart(item, material)
 	end
-
-	if item.Shape == Enum.PartType.Block then
-		return true
-	elseif item.Shape == Enum.PartType.Ball then
-		return true
-	else
-		return false
-	end
+	return true
 end
 
 function TerrainConverter:CanConvert(items)
@@ -65,6 +70,29 @@ function TerrainConverter:CanConvert(items)
 	end
 
 	return false
+end
+
+
+function TerrainConverter:_canConvertPart(item)
+	if not (item:IsA("Part") or item:IsA("WedgePart")) then
+		return false
+	end
+
+	if item == Workspace.Terrain then
+		return false
+	end
+
+	if item:IsA("WedgePart") then
+		return true
+	elseif item.Shape == Enum.PartType.Block then
+		return true
+	elseif item.Shape == Enum.PartType.Ball then
+		return true
+	elseif item.Shape == Enum.PartType.Cylinder then
+		return true
+	else
+		return false
+	end
 end
 
 function TerrainConverter:_getOverwriteMaterials()
@@ -99,6 +127,51 @@ function TerrainConverter:_doFillUpwards(cellMaterial, desiredMaterial)
 	end
 
 	return true
+end
+
+function TerrainConverter:_convertPart(part, material)
+	assert(typeof(material) == "EnumItem")
+	assert(part:IsA("Part") or part:IsA("WedgePart"))
+
+	if part:IsA("WedgePart") then
+		self:_fillWedge(part.CFrame, part.Size, material)
+	elseif part.Shape == Enum.PartType.Block then
+		self:_fillBlock(part.CFrame, part.Size, material)
+	elseif part.Shape == Enum.PartType.Ball then
+		self:_fillBall(part.Position, part.Size.x/2, material)
+	elseif part.Shape == Enum.PartType.Cylinder then
+		local size = part.Size
+		local height = size.x
+		local radius = math.min(size.y, size.z)
+		self:_fillCylinder(part.CFrame * CFrame.Angles(0, 0, math.pi/2), height, radius, material)
+	else
+		warn(("[PartToTerrain] - Bad part.Shape, '%s' is not supported"):format(tostring(part.Shape.Name)))
+		return false
+	end
+
+	if not self.KeepConvertedPart.Value then
+		part:Remove()
+	end
+
+	return true
+end
+
+function TerrainConverter:_fillWedge(wedgeCFrame, wedgeSize, desiredMaterial)
+	if (self.OverwriteTerrain.Value and self.OverwriteWater.Value) then
+		Workspace.Terrain:FillWedge(wedgeCFrame, wedgeSize, desiredMaterial)
+		return
+	end
+
+	warn("[TerrainConverter._fillWedge] - Cannot convert wedge with overwrite terrain, or overwrite water enabled!")
+end
+
+function TerrainConverter:_fillCylinder(cylinderCFrame, height, radius, desiredMaterial)
+	if (self.OverwriteTerrain.Value and self.OverwriteWater.Value) then
+		Workspace.Terrain:FillCylinder(cylinderCFrame, height, radius, desiredMaterial)
+		return
+	end
+
+	warn("[TerrainConverter._fillCylinder] - Cannot convert wedge with overwrite terrain, or overwrite water enabled!")
 end
 
 function TerrainConverter:_fillBlock(blockCFrame, blockSize, desiredMaterial)
@@ -251,51 +324,6 @@ function TerrainConverter:_fillBall(center, radius, desiredMaterial)
 	end
 
 	Workspace.Terrain:WriteVoxels(region, resolution, materialVoxels, occupancyVoxels)
-	print("Done writing voxels")
-end
-
-function TerrainConverter:_convertPart(part, material)
-	assert(typeof(material) == "EnumItem")
-	assert(part:IsA("Part"))
-
-	if part.Shape == Enum.PartType.Block then
-		self:_fillBlock(part.CFrame, part.Size, material)
-	elseif part.Shape == Enum.PartType.Ball then
-		self:_fillBall(part.Position, part.Size.x/2, material)
-	else
-		warn(("[PartToTerrain] - Bad part.Shape, '%s' is not supported"):format(tostring(part.Shape.Name)))
-		return false
-	end
-
-	if not self.KeepConvertedPart.Value then
-		part:Remove()
-	end
-
-	return true
-end
-
-
-function TerrainConverter:Convert(items, material)
-	assert(items)
-	assert(typeof(material) == "EnumItem")
-
-	local convertables = {}
-	for _, item in pairs(items) do
-		if self:_canConvertPart(item) then
-			table.insert(convertables, item)
-		end
-	end
-
-	-- don't fire change history service of nothing converts
-	if #convertables <= 0 then
-		return false
-	end
-
-	self.ConversionStarting:Fire()
-	for _, item in pairs(convertables) do
-		self:_convertPart(item, material)
-	end
-	return true
 end
 
 return TerrainConverter

@@ -1,4 +1,5 @@
 --- Part to terrain plugin
+-- @script Plugin
 -- @author Quenty
 
 local HttpService = game:GetService("HttpService")
@@ -95,11 +96,15 @@ else
 		"rbxassetid://1618168422"
 	)
 
-	button.Click:connect(function()
+	button.Click:Connect(function()
 		if not isActive then
 			activate(button)
 		else
 			deactivate(button)
 		end
+	end)
+
+	plugin.Unloading:Connect(function()
+		deactivate(button)
 	end)
 end
