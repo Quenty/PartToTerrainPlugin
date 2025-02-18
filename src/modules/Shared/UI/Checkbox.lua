@@ -1,13 +1,20 @@
-local BasicPane = require(script.Parent.BasicPane)
+--[=[
+	@class Checkbox
+]=]
+
+local require = require(script.Parent.loader).load(script)
+
+local BasicPane = require("BasicPane")
+local PluginTemplateProvider = require("PluginTemplateProvider")
 
 local Checkbox = setmetatable({}, BasicPane)
 Checkbox.__index = Checkbox
 Checkbox.ClassName = "Checkbox"
 
-function Checkbox.new(options)
-	local gui = script.Parent.Parent.GuiTemplates.CheckboxTemplate:Clone()
-	gui.Name = "Checkbox"
-	local self = setmetatable(BasicPane.new(gui), Checkbox)
+function Checkbox.new(serviceBag, options)
+	local self = setmetatable(BasicPane.new(serviceBag:GetService(PluginTemplateProvider):Clone("CheckboxTemplate")), Checkbox)
+
+	self._serviceBag = assert(serviceBag, "No serviceBag")
 
 	self._checked = options.BoolValue or error("No checkedValue")
 

@@ -1,42 +1,42 @@
----
--- @classmod TerrainConverter
--- @author Quenty
+--[=[
+	@param TerrainConverter
+]=]
 
 local Workspace = game:GetService("Workspace")
 
-local Signal = require(script.Parent.Signal)
-local BoundingBox = require(script.Parent.BoundingBox)
-local BasicPane = require(script.Parent.BasicPane)
-local terrainMaterialList = require(script.Parent.terrainMaterialList)
+local require = require(script.Parent.loader).load(script)
+
+local Signal = require("Signal")
+local BoundingBoxUtils = require("BoundingBoxUtils")
+local BasicPane = require("BasicPane")
+local TerrainMaterialList = require("TerrainMaterialList")
 
 local TerrainConverter = setmetatable({}, BasicPane)
 TerrainConverter.ClassName = "TerrainConverter"
 TerrainConverter.__index = TerrainConverter
 TerrainConverter.RESOLUTION = 4
 
-function TerrainConverter.new()
+function TerrainConverter.new(serviceBag)
 	local self = setmetatable(BasicPane.new(), TerrainConverter)
 
-	self.KeepConvertedPart = Instance.new("BoolValue")
+	self._serviceBag = assert(serviceBag, "No serviceBag")
+
+	self.KeepConvertedPart = self._maid:Add(Instance.new("BoolValue"))
 	self.KeepConvertedPart.Value = true
-	self._maid:GiveTask(self.KeepConvertedPart)
 
-	self.OverwriteTerrain = Instance.new("BoolValue")
+	self.OverwriteTerrain = self._maid:Add(Instance.new("BoolValue"))
 	self.OverwriteTerrain.Value = true
-	self._maid:GiveTask(self.OverwriteTerrain)
 
-	self.OverwriteWater = Instance.new("BoolValue")
+	self.OverwriteWater = self._maid:Add(Instance.new("BoolValue"))
 	self.OverwriteWater.Value = true
-	self._maid:GiveTask(self.OverwriteWater)
 
-	self.ConversionStarting = Signal.new()
-	self._maid:GiveTask(self.ConversionStarting)
+	self.ConversionStarting = self._maid:Add(Signal.new())
 
 	return self
 end
 
-function TerrainConverter:Convert(items, material)
-	assert(items)
+function TerrainConverter:Convert(items, material: { Enum.Material })
+	assert(items, "Bad items")
 	assert(typeof(material) == "EnumItem")
 
 	local convertables = {}
@@ -100,7 +100,7 @@ function TerrainConverter:_getOverwriteMaterials()
 	materials[Enum.Material.Air] = true
 
 	if self.OverwriteTerrain.Value then
-		for _, item in pairs(terrainMaterialList) do
+		for _, item in pairs(TerrainMaterialList) do
 			materials[item.enum] = true
 		end
 	end
@@ -185,7 +185,7 @@ function TerrainConverter:_fillBlock(blockCFrame, blockSize, desiredMaterial)
 
 	-- https://pastebin.com/S03Q8ftH
 
-	local aa_size, aa_position = BoundingBox.GetBoundingBox({{
+	local aa_size, aa_position = BoundingBoxUtils.getBoundingBox({{
 		Size = blockSize;
 		CFrame = blockCFrame;
 	}})

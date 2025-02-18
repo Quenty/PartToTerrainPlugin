@@ -1,2 +1,4 @@
 *.sublime-workspace
 *.rbxl.lock
+node_modules
+roblox.yml

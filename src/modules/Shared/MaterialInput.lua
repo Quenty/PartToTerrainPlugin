@@ -1,13 +1,14 @@
----
--- @classmod MaterialInput
--- @author Quenty
+--[=[
+	@class MaterialInput
+]=]
+local require = require(script.Parent.loader).load(script)
 
 local UserInputService = game:GetService("UserInputService")
 local Workspace = game:GetService("Workspace")
 
-local BasicPane = require(script.Parent.BasicPane)
-local Raycaster = require(script.Parent.Raycaster)
-local Signal = require(script.Parent.Signal)
+local BasicPane = require("BasicPane")
+local Raycaster = require("Raycaster")
+local Signal = require("Signal")
 
 local MaterialInput = setmetatable({}, BasicPane)
 MaterialInput.ClassName = "MaterialInput"

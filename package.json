@@ -1,0 +1,25 @@
+{
+  "name": "parttoterrainplugin",
+  "version": "1.0.1",
+  "description": "Part to terrain Roblox plugin",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@quenty/baseobject": "^10.7.1",
+    "@quenty/basicpane": "^13.15.0",
+    "@quenty/boundingboxutils": "^4.3.0",
+    "@quenty/draw": "^7.7.1",
+    "@quenty/inputobjectutils": "^4.16.0",
+    "@quenty/loader": "^10.7.1",
+    "@quenty/maid": "^3.4.0",
+    "@quenty/raycaster": "^3.4.0",
+    "@quenty/remoting": "^12.16.0",
+    "@quenty/servicebag": "^11.10.0",
+    "@quenty/signal": "^7.9.0",
+    "@quenty/templateprovider": "^11.16.1",
+    "@quenty/valueobject": "^13.15.0"
+  }
+}

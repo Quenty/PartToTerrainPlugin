@@ -1,26 +1,29 @@
----
--- @classmod MaterialList
--- @author Quenty
+--[=[
+	@class MaterialList
+]=]
 
-local Maid = require(script.Parent.Maid)
-local ValueObject = require(script.Parent.ValueObject)
-local MaterialButton = require(script.Parent.MaterialButton)
-local terrainMaterialList = require(script.Parent.terrainMaterialList)
-local BasicPane = require(script.Parent.BasicPane)
+local require = require(script.Parent.loader).load(script)
+
+local Maid = require("Maid")
+local ValueObject = require("ValueObject")
+local MaterialButton = require("MaterialButton")
+local TerrainMaterialList = require("TerrainMaterialList")
+local BasicPane = require("BasicPane")
 
 local MaterialList = setmetatable({}, BasicPane)
 MaterialList.ClassName = "MaterialList"
 MaterialList.__index = MaterialList
 
-function MaterialList.new(gui)
+function MaterialList.new(serviceBag, gui)
 	local self = setmetatable(BasicPane.new(gui), MaterialList)
 
-	self.SelectedMaterial = ValueObject.new()
-	self._maid:GiveTask(self.SelectedMaterial)
+	self._serviceBag = assert(serviceBag, "No serviceBag")
+
+	self.SelectedMaterial = self._maid:Add(ValueObject.new())
 
 	self._materialToButton = {}
-	for _, materialData in pairs(terrainMaterialList) do
-		local button = MaterialButton.new(materialData)
+	for _, materialData in pairs(TerrainMaterialList) do
+		local button = MaterialButton.new(self._serviceBag, materialData)
 		self:_addButton(button)
 	end
 

@@ -1,4 +1,9 @@
---- Facades the plugin interface
+--[=[
+	Facades the plugin interface
+
+	@class PluginFacade
+]=]
+
 local Players = game:GetService("Players")
 
 local PluginFacade = {}

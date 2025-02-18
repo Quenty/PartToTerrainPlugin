@@ -1,16 +1,20 @@
----
--- @classmod ConvertPane
--- @author Quenty
+--[=[
+	@class ConvertPane
+]=]
 
-local BasicPane = require(script.Parent.BasicPane)
-local Signal = require(script.Parent.Signal)
+local require = require(script.Parent.loader).load(script)
+
+local BasicPane = require("BasicPane")
+local Signal = require("Signal")
 
 local ConvertPane = setmetatable({}, BasicPane)
 ConvertPane.ClassName = "ConvertPane"
 ConvertPane.__index = ConvertPane
 
-function ConvertPane.new(gui, selectionService, terrainConverter)
+function ConvertPane.new(serviceBag, gui, selectionService, terrainConverter)
 	local self = setmetatable(BasicPane.new(gui), ConvertPane)
+
+	self._serviceBag = assert(serviceBag, "No serviceBag")
 
 	self.RequestConvert = Signal.new() -- :Fire(selection)
 

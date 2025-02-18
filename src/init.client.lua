@@ -1,13 +1,20 @@
---- Part to terrain plugin
--- @script Plugin
--- @author Quenty
+--[=[
+	Part to terrain plugin
+	@class PartToTerrainPlugin
+]=]
 
 local HttpService = game:GetService("HttpService")
 
-local Maid = require(script.Maid)
-local MaterialInput = require(script.MaterialInput)
-local TerrainConverter = require(script.TerrainConverter)
-local UI = require(script.UI)
+local modules = script:WaitForChild("modules")
+local loader = modules:FindFirstChild("LoaderUtils", true).Parent
+
+local require = require(loader).bootstrapPlugin(modules)
+
+local Maid = require("Maid")
+local MaterialInput = require("MaterialInput")
+local TerrainConverter = require("TerrainConverter")
+local PluginUI = require("PluginUI")
+local ServiceBag = require("ServiceBag")
 
 -- luacheck: push ignore
 local plugin = plugin
@@ -18,8 +25,8 @@ local IS_DEBUG_MODE = script:IsDescendantOf(game)
 local selectionService
 if IS_DEBUG_MODE then
 	warn("Starting plugin in debug mode")
-	plugin = require(script.PluginFacade).new(plugin)
-	selectionService = require(script.SelectionFacade).new()
+	plugin = require("PluginFacade").new(plugin)
+	selectionService = require("SelectionFacade").new(plugin)
 else
 	selectionService = game.Selection
 end
@@ -30,7 +37,7 @@ screenGui.Enabled = false
 local mainMaid = Maid.new()
 
 local isActive = false
-local function deactivate(button)
+local function deactivate(_button)
 	if not isActive then
 		return
 	end
@@ -45,27 +52,31 @@ local function activate(button)
 	end
 	isActive = true
 	local maid = Maid.new()
+	local serviceBag = maid:Add(ServiceBag.new())
+	serviceBag:GetService(require("PluginTemplateProvider"))
 
-	local converter = TerrainConverter.new()
-	maid:GiveTask(converter)
+	serviceBag:Init()
+	serviceBag:Start()
 
-	local newScreenGui = screenGui:Clone()
-	maid:GiveTask(newScreenGui)
+
+	local converter = maid:Add(TerrainConverter.new(serviceBag))
+	local newScreenGui = maid:Add(screenGui:Clone())
+
 	newScreenGui.Enabled = true
 	newScreenGui.Parent = IS_DEBUG_MODE and game.Players.LocalPlayer.PlayerGui or game.CoreGui
 
-	local ui = UI.new(newScreenGui.Main, selectionService, converter)
-	maid:GiveTask(ui)
-	maid:GiveTask(ui.RequestClose:Connect(function()
+	local pluginUI = PluginUI.new(serviceBag, newScreenGui.Main, selectionService, converter)
+	maid:GiveTask(pluginUI)
+	maid:GiveTask(pluginUI.RequestClose:Connect(function()
 		deactivate()
 	end))
 
-	maid:GiveTask(ui.RequestConvert:Connect(function(selection, material)
+	maid:GiveTask(pluginUI.RequestConvert:Connect(function(selection, material)
 		converter:Convert(selection, material)
 	end))
 
 	local materialInput = MaterialInput.new(plugin:GetMouse())
-	ui:SetMaterialInput(materialInput)
+	pluginUI:SetMaterialInput(materialInput)
 
 	-- Handle change history service
 	if not IS_DEBUG_MODE then

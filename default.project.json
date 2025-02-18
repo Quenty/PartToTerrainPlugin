@@ -1,6 +1,7 @@
 {
-  "name": "PartToTerrain",
-    "tree": {
+  "name": "QuentyPartToTerrain",
+  "globIgnorePaths": [ "**/.package-lock.json" ],
+  "tree": {
     "$className": "DataModel",
     "StarterGui": {
       "$className": "StarterGui",

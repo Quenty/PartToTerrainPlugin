@@ -1,20 +1,23 @@
----
--- @classmod MaterialButton
--- @author Quenty
+--[=[
+	@class MaterialButton
+]=]
+
+local require = require(script.Parent.loader).load(script)
 
 local TextService = game:GetService("TextService")
 
-local BasicPane = require(script.Parent.BasicPane)
-local Signal = require(script.Parent.Signal)
+local BasicPane = require("BasicPane")
+local Signal = require("Signal")
+local PluginTemplateProvider = require("PluginTemplateProvider")
 
 local MaterialButton = {}
 MaterialButton.ClassName = "MaterialButton"
 MaterialButton.__index = MaterialButton
 
-function MaterialButton.new(data)
-	local gui = script.Parent.Parent.GuiTemplates.MaterialButtonTemplate:Clone()
-	gui.Name = "MaterialButton"
-	local self = setmetatable(BasicPane.new(gui), MaterialButton)
+function MaterialButton.new(serviceBag, data)
+	local self = setmetatable(BasicPane.new(serviceBag:GetService(PluginTemplateProvider):Clone("MaterialButtonTemplate")), MaterialButton)
+
+	self._serviceBag = assert(serviceBag, "No serviceBag")
 
 	-- handle activation
 	self.Activated = Signal.new()

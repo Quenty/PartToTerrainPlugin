@@ -1,31 +1,34 @@
----
--- @classmod UI
--- @author Quenty
+--[=[
+	@class PluginUI
+]=]
 
-local BasicPane = require(script.Parent.BasicPane)
-local MaterialList = require(script.Parent.MaterialList)
-local Signal = require(script.Parent.Signal)
-local ConvertPane = require(script.Parent.ConvertPane)
-local Checkbox = require(script.Parent.Checkbox)
+local require = require(script.Parent.loader).load(script)
 
-local UI = setmetatable({}, BasicPane)
-UI.ClassName = "UI"
-UI.__index = UI
+local BasicPane = require("BasicPane")
+local MaterialList = require("MaterialList")
+local Signal = require("Signal")
+local ConvertPane = require("ConvertPane")
+local Checkbox = require("Checkbox")
 
-function UI.new(gui, selectonService, terrainConverter)
-	assert(gui)
-	local self = setmetatable(BasicPane.new(gui), UI)
+local PluginUI = setmetatable({}, BasicPane)
+PluginUI.ClassName = "PluginUI"
+PluginUI.__index = PluginUI
+
+function PluginUI.new(serviceBag, gui, selectonService, terrainConverter)
+	local self = setmetatable(BasicPane.new(gui), PluginUI)
+
+	self._serviceBag = assert(serviceBag, "No serviceBag")
 
 	self._terrainConverter = terrainConverter or error("No terrainConverter")
 	self._selectionService = selectonService or error("No selectonService")
 
-	self.RequestClose = Signal.new()
-	self.RequestConvert = Signal.new() -- :Fire(selection, material)
+	self.RequestClose = self._maid:Add(Signal.new())
+	self.RequestConvert = self._maid:Add(Signal.new()) -- :Fire(selection, material)
 
-	self._materialList = MaterialList.new(self.Gui.Content.MaterialList)
+	self._materialList = MaterialList.new(self._serviceBag, self.Gui.Content.MaterialList)
 	self._maid:GiveTask(self._materialList)
 
-	self._convertPane = ConvertPane.new(self.Gui.Content.ConvertPane, selectonService, terrainConverter)
+	self._convertPane = ConvertPane.new(self._serviceBag, self.Gui.Content.ConvertPane, selectonService, terrainConverter)
 	self._maid:GiveTask(self._convertPane)
 	self._maid:GiveTask(self._convertPane.RequestConvert:Connect(function(selection)
 		self.RequestConvert:Fire(selection, self._materialList.SelectedMaterial.Value)
@@ -37,19 +40,19 @@ function UI.new(gui, selectonService, terrainConverter)
 
 	self._optionsFrame = self.Gui.Content.Options
 
-	self._removePartCheckBox = Checkbox.new({
+	self._removePartCheckBox = Checkbox.new(self._serviceBag, {
 		Name = "Keep converted part";
 		BoolValue = self._terrainConverter.KeepConvertedPart
 	})
 	self:_addOptionGui(self._removePartCheckBox)
 
-	self._replaceExistingTerrain = Checkbox.new({
+	self._replaceExistingTerrain = Checkbox.new(self._serviceBag, {
 		Name = "Overwrite terrain";
 		BoolValue = self._terrainConverter.OverwriteTerrain;
 	})
 	self:_addOptionGui(self._replaceExistingTerrain)
 
-	self._ignoreWater = Checkbox.new({
+	self._ignoreWater = Checkbox.new(self._serviceBag, {
 		Name = "Overwrite water";
 		BoolValue = self._terrainConverter.OverwriteWater;
 	})
@@ -58,13 +61,13 @@ function UI.new(gui, selectonService, terrainConverter)
 	return self
 end
 
-function UI:_addOptionGui(option)
+function PluginUI:_addOptionGui(option)
 	option.Gui.LayoutOrder = #self._optionsFrame:GetChildren() + 1
 	option.Gui.Parent = self._optionsFrame
 	self._maid:GiveTask(option)
 end
 
-function UI:SetMaterialInput(materialInput)
+function PluginUI:SetMaterialInput(materialInput)
 	self._materialInput = materialInput or error("No materialInput")
 	self._maid:GiveTask(materialInput)
 
@@ -80,4 +83,4 @@ function UI:SetMaterialInput(materialInput)
 	end))
 end
 
-return UI
+return PluginUI
