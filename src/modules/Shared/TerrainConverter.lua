@@ -72,7 +72,6 @@ function TerrainConverter:CanConvert(items)
 	return false
 end
 
-
 function TerrainConverter:_canConvertPart(item)
 	if not (item:IsA("Part") or item:IsA("WedgePart")) then
 		return false
@@ -138,12 +137,12 @@ function TerrainConverter:_convertPart(part, material)
 	elseif part.Shape == Enum.PartType.Block then
 		self:_fillBlock(part.CFrame, part.Size, material)
 	elseif part.Shape == Enum.PartType.Ball then
-		self:_fillBall(part.Position, part.Size.x/2, material)
+		self:_fillBall(part.Position, part.Size.x / 2, material)
 	elseif part.Shape == Enum.PartType.Cylinder then
 		local size = part.Size
 		local height = size.x
-		local radius = math.min(size.y, size.z)
-		self:_fillCylinder(part.CFrame * CFrame.Angles(0, 0, math.pi/2), height, radius, material)
+		local radius = math.min(size.y, size.z) / 2
+		self:_fillCylinder(part.CFrame * CFrame.Angles(0, 0, math.pi / 2), height, radius, material)
 	else
 		warn(("[PartToTerrain] - Bad part.Shape, '%s' is not supported"):format(tostring(part.Shape.Name)))
 		return false
@@ -157,7 +156,7 @@ function TerrainConverter:_convertPart(part, material)
 end
 
 function TerrainConverter:_fillWedge(wedgeCFrame, wedgeSize, desiredMaterial)
-	if (self.OverwriteTerrain.Value and self.OverwriteWater.Value) then
+	if self.OverwriteTerrain.Value and self.OverwriteWater.Value then
 		Workspace.Terrain:FillWedge(wedgeCFrame, wedgeSize, desiredMaterial)
 		return
 	end
@@ -166,7 +165,7 @@ function TerrainConverter:_fillWedge(wedgeCFrame, wedgeSize, desiredMaterial)
 end
 
 function TerrainConverter:_fillCylinder(cylinderCFrame, height, radius, desiredMaterial)
-	if (self.OverwriteTerrain.Value and self.OverwriteWater.Value) then
+	if self.OverwriteTerrain.Value and self.OverwriteWater.Value then
 		Workspace.Terrain:FillCylinder(cylinderCFrame, height, radius, desiredMaterial)
 		return
 	end
@@ -175,7 +174,7 @@ function TerrainConverter:_fillCylinder(cylinderCFrame, height, radius, desiredM
 end
 
 function TerrainConverter:_fillBlock(blockCFrame, blockSize, desiredMaterial)
-	if (self.OverwriteTerrain.Value and self.OverwriteWater.Value) then
+	if self.OverwriteTerrain.Value and self.OverwriteWater.Value then
 		Workspace.Terrain:FillBlock(blockCFrame, blockSize, desiredMaterial)
 		return
 	end
@@ -185,22 +184,22 @@ function TerrainConverter:_fillBlock(blockCFrame, blockSize, desiredMaterial)
 
 	-- https://pastebin.com/S03Q8ftH
 
-	local aa_size, aa_position = BoundingBoxUtils.getBoundingBox({{
-		Size = blockSize;
-		CFrame = blockCFrame;
-	}})
+	local aa_size, aa_position = BoundingBoxUtils.getBoundingBox({ {
+		Size = blockSize,
+		CFrame = blockCFrame,
+	} })
 
 	local smallestSize = math.min(blockSize.x, blockSize.y, blockSize.z)
 	local resolution = self.RESOLUTION
 
 	-- make sure to get all grids
-	local min = aa_position - aa_size/2
-	local max = aa_position + aa_size/2
+	local min = aa_position - aa_size / 2
+	local max = aa_position + aa_size / 2
 	local region = Region3.new(min, max):ExpandToGrid(resolution)
-	min = region.CFrame.p - region.Size/2
+	min = region.CFrame.p - region.Size / 2
 
 	-- luacheck: push ignore
-	max = region.CFrame.p + region.Size/2
+	max = region.CFrame.p + region.Size / 2
 	-- luacheck: pop ignore
 
 	local materialVoxels, occupancyVoxels = Workspace.Terrain:ReadVoxels(region, resolution)
@@ -212,22 +211,20 @@ function TerrainConverter:_fillBlock(blockCFrame, blockSize, desiredMaterial)
 
 	-- Since we only care about the size if it's less than one cell, we clamp this to make the calculations below faster.
 	local sizeCellClamped = (blockSize / resolution)
-	sizeCellClamped = Vector3.new(
-		math.min(1, sizeCellClamped.x),
-		math.min(1, sizeCellClamped.y),
-		math.min(1, sizeCellClamped.z))
+	sizeCellClamped =
+		Vector3.new(math.min(1, sizeCellClamped.x), math.min(1, sizeCellClamped.y), math.min(1, sizeCellClamped.z))
 	local sizeCellsHalfOffset = blockSize * (0.5 / resolution) + Vector3.new(0.5, 0.5, 0.5)
 
-	for x=1, size.X do
+	for x = 1, size.X do
 		local cellPosX = min.x + (x - 0.5) * resolution
-		for y=1, size.Y do
+		for y = 1, size.Y do
 			local cellPosY = min.y + (y - 0.5) * resolution
-			for z=1, size.Z do
+			for z = 1, size.Z do
 				local cellPosZ = min.z + (z - 0.5) * resolution
 				local position = Vector3.new(cellPosX, cellPosY, cellPosZ)
 
 				-- -0.5 to 0.5
-				local offset = blockCFrame:pointToObjectSpace(position)/resolution
+				local offset = blockCFrame:pointToObjectSpace(position) / resolution
 
 				-- Draw.Point(position)
 
@@ -269,7 +266,7 @@ function TerrainConverter:_fillBlock(blockCFrame, blockSize, desiredMaterial)
 end
 
 function TerrainConverter:_fillBall(center, radius, desiredMaterial)
-	if (self.OverwriteTerrain.Value and self.OverwriteWater.Value) then
+	if self.OverwriteTerrain.Value and self.OverwriteWater.Value then
 		Workspace.Terrain:FillBall(center, radius, desiredMaterial)
 		return
 	end
@@ -283,23 +280,23 @@ function TerrainConverter:_fillBall(center, radius, desiredMaterial)
 	local max = center + radius3
 	local region = Region3.new(min, max):ExpandToGrid(resolution)
 
-	min = region.CFrame.p - region.Size/2
+	min = region.CFrame.p - region.Size / 2
 	-- luacheck: push ignore
-	max = region.CFrame.p + region.Size/2
+	max = region.CFrame.p + region.Size / 2
 	-- luacheck: pop ignore
 
 	local materialVoxels, occupancyVoxels = Workspace.Terrain:ReadVoxels(region, resolution)
 	local size = materialVoxels.Size
-	for x=1, size.X do
+	for x = 1, size.X do
 		local cellX = min.x + (x - 0.5) * resolution - center.x
-		for y=1, size.Y do
+		for y = 1, size.Y do
 			local cellY = min.y + (y - 0.5) * resolution - center.y
-			for z=1, size.Z do
+			for z = 1, size.Z do
 				local cellZ = min.z + (z - 0.5) * resolution - center.z
 
 				local cellMaterial = materialVoxels[x][y][z]
 				local cellOccupancy = occupancyVoxels[x][y][z]
-				local distance = math.sqrt(cellX*cellX + cellY*cellY + cellZ*cellZ)
+				local distance = math.sqrt(cellX * cellX + cellY * cellY + cellZ * cellZ)
 				local brushOccupancy = math.max(0, math.min(1, (radius + 0.5 * resolution - distance) / resolution))
 
 				-- Use terrain tools filling behavior here

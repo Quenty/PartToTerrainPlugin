@@ -20,7 +20,7 @@ local ServiceBag = require("ServiceBag")
 local plugin = plugin
 -- luacheck: pop ignore
 
-local IS_DEBUG_MODE = script:IsDescendantOf(game)
+local IS_DEBUG_MODE = script:IsDescendantOf(game) and not script:FindFirstAncestorWhichIsA("PluginDebugService")
 
 local selectionService
 if IS_DEBUG_MODE then
@@ -57,7 +57,6 @@ local function activate(button)
 
 	serviceBag:Init()
 	serviceBag:Start()
-
 
 	local converter = maid:Add(TerrainConverter.new(serviceBag))
 	local newScreenGui = maid:Add(screenGui:Clone())
@@ -101,11 +100,8 @@ if IS_DEBUG_MODE then
 	activate()
 else
 	local toolbar = plugin:CreateToolbar("Object")
-	local button = toolbar:CreateButton(
-		"Part to Terrain",
-		"Converts roblox parts to terrain",
-		"rbxassetid://1618168422"
-	)
+	local button =
+		toolbar:CreateButton("Part to Terrain", "Converts roblox parts to terrain", "rbxassetid://1618168422")
 
 	button.Click:Connect(function()
 		if not isActive then
